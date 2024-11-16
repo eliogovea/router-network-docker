@@ -35,15 +35,15 @@ def setup_logger():
     logger.addHandler(stream_handler)
 
 # Function to log packet details using Scapy (only summary)
-def log_packet(pkt):
-    # Log packet details
-    raw_packet = pkt.get_payload()
+def inspect_packet(pkt):
+    packet_id = pkt.id
+    packet_data = pkt.get_payload()
+    packet_data_scapy = IP(packet_data)
+    
+    # TODO: inspect packet
 
-    # Use Scapy to parse the raw packet
-    scapy_pkt = IP(raw_packet)  # Assume the packet is IP-based
-
-    # Log packet summary
-    logger.info(f"Packet Summary: {scapy_pkt.summary()}")  # Print summary of the packet
+    logger.info(f"Packet  {packet_id}: {packet_data_scapy.summary()}")    
+    logger.info(f"Verdict {packet_id}: accept")
 
     # Accept the packet (so it continues through the network stack)
     pkt.accept()
@@ -53,7 +53,7 @@ def process_packets():
     nfqueue = NetfilterQueue()
 
     # Bind the callback function to handle packets
-    nfqueue.bind(0, log_packet)
+    nfqueue.bind(0, inspect_packet)
 
     # Start processing packets (this will block indefinitely)
     try:

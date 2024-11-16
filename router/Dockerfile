@@ -26,7 +26,7 @@ RUN pip3 install NetfilterQueue scapy
 
 # Copy files from the host to the container
 COPY files/etc/dnsmasq.conf     /etc/dnsmasq.conf
-COPY files/opt/packet_logger.py /opt/packet_logger.py
+COPY files/opt/packet_inspector.py /opt/packet_inspector.py
 
 # Copy the entrypoint script from the host to the container
 COPY entrypoint.sh /entrypoint.sh

@@ -42,4 +42,4 @@ iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT  # WAN to LAN routing (IPv4)
 dnsmasq -C /etc/dnsmasq.conf
 
 # Keep the container running to avoid exit
-exec python3 /opt/packet_logger.py
+exec python3 /opt/packet_inspector.py
