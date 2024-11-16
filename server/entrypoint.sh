@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+set -u
 set -x
 
 # Bring up the eth0 network interface if it's not already up
@@ -13,7 +15,7 @@ ip addr flush dev eth0
 ip addr add 192.168.20.2/24 dev eth0
 
 # Remove any default route that might already exist (prevents conflicts)
-ip route del default 2>/dev/null
+ip route del default || true
 # Add a default IPv4 route via the router's IP in the WAN network
 ip route add default via 192.168.20.1
 

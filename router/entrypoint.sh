@@ -1,5 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
+set -e
+set -u
 set -x
 
 # Enable IPv4 packet forwarding to allow routing
