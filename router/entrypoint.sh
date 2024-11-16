@@ -24,7 +24,13 @@ ip addr add 192.168.20.1/24 dev eth1
 # Clear existing iptables and ip6tables rules to start fresh
 iptables -F
 
-# Set default policy to DROP all forwarded packets (security)
+# Set default policy to DROP
+iptables -P INPUT DROP
+
+# Set the NFQUEUE rule to send packets to queue 0
+iptables -A INPUT -j NFQUEUE --queue-num 0
+
+# Set default policy to DROP
 iptables -P FORWARD DROP
 
 # Set the NFQUEUE rule to send packets to queue 0
