@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     iproute2 \
     iputils-ping \
     iptables \
+    dnsmasq \
     libnfnetlink-dev \
     libnetfilter-queue-dev \
     python3 \
@@ -23,8 +24,9 @@ RUN apt-get update && apt-get install -y \
 # Install Python dependencies for NetfilterQueue and Scapy (used for packet handling)
 RUN pip3 install NetfilterQueue scapy
 
-# Copy the Python script for logging packets into the container
-COPY packet_logger.py /packet_logger.py
+# Copy files from the host to the container
+COPY files/etc/dnsmasq.conf     /etc/dnsmasq.conf
+COPY files/opt/packet_logger.py /opt/packet_logger.py
 
 # Copy the entrypoint script from the host to the container
 COPY entrypoint.sh /entrypoint.sh

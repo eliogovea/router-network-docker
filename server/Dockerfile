@@ -5,7 +5,7 @@ FROM alpine:latest
 # - iproute2: for IP address and routing manipulation
 # - iputils: for networking utilities like ping
 RUN apk update && \
-    apk add --no-cache iproute2 iputils
+    apk add --no-cache dhclient iproute2 iputils
 
 # Copy the entrypoint script from the host to the container
 COPY entrypoint.sh /entrypoint.sh
