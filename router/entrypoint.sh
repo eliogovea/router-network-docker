@@ -37,4 +37,4 @@ iptables -A FORWARD -i eth0 -o eth1 -j ACCEPT  # LAN to WAN routing (IPv4)
 iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT  # WAN to LAN routing (IPv4)
 
 # Keep the container running to avoid exit
-python3 /packet_logger.py
+exec python3 /packet_logger.py

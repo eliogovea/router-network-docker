@@ -17,16 +17,22 @@ def setup_logger():
     # Set logger level
     logger.setLevel(logging.INFO)  # Set to INFO level or change to DEBUG if needed
 
+    # Create formatter
+    formatter = logging.Formatter('%(asctime)s - %(message)s')
+
     # Create file handler that logs to the file
     file_handler = logging.FileHandler(log_file)
     file_handler.setLevel(logging.INFO)
-
-    # Create formatter and add it to the handler
-    formatter = logging.Formatter('%(asctime)s - %(message)s')
     file_handler.setFormatter(formatter)
 
-    # Add the file handler to the logger
+    # Create stream handler that logs to stdout
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(logging.INFO)
+    stream_handler.setFormatter(formatter)
+
+    # Add both the file handler and stream handler to the logger
     logger.addHandler(file_handler)
+    logger.addHandler(stream_handler)
 
 # Function to log packet details using Scapy (only summary)
 def log_packet(pkt):
