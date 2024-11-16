@@ -11,6 +11,11 @@ services:
     cap_add:
       - NET_RAW  # Allow raw packet access (needed for ping)
       - NET_ADMIN  # Allow administrative network tasks (like configuring IP addresses)
+    volumes:
+      # Workaround to prevent Docker Engine from setting the content of /etc/resolv.conf
+      # NOTE: the IP address of the router is hardcoded in ./client/files/etc/resolv.conf
+      # TODO: find a better way
+      - ./client/files/etc/resolv.conf:/etc/resolv.conf:ro
     entrypoint: ["sh", "/entrypoint.sh"]  # Run the entrypoint script on container startup
 
   router:
