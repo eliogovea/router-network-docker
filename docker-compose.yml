@@ -47,5 +47,7 @@ services:
 networks:
   lan:
     driver: bridge  # Use a bridge network for LAN to simulate a local network segment
+    internal: true
   wan:
     driver: bridge  # Use a separate bridge network for WAN to simulate an external network segment
+    internal: true
