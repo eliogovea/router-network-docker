@@ -1,9 +1,7 @@
 # Use a lightweight Alpine Linux base image
 FROM alpine:latest
 
-# Install necessary packages:
-# - iproute2: for IP address and routing manipulation
-# - iputils: for networking utilities like ping
+# Install necessary packages
 RUN apk update && \
     apk add --no-cache iproute2 iputils
 
@@ -12,3 +10,9 @@ COPY entrypoint.sh /entrypoint.sh
 
 # Make the entrypoint script executable
 RUN chmod +x /entrypoint.sh
+
+# Set the working directory to the root of the container
+WORKDIR /
+
+# Set the default entrypoint script to configure the network and iptables
+ENTRYPOINT ["/entrypoint.sh"]

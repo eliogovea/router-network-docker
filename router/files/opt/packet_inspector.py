@@ -4,20 +4,14 @@ import os
 from netfilterqueue import NetfilterQueue
 from scapy.all import IP
 
-
-# Set up the logger once
 logger = logging.getLogger()
 
-# Function to configure the logger
 def setup_logger():
-    # Get the script name (without extension) for the log file
     script_name = os.path.splitext(os.path.basename(__file__))[0]
     log_file = f"/var/log/{script_name}.log"
 
-    # Set logger level
-    logger.setLevel(logging.INFO)  # Set to INFO level or change to DEBUG if needed
+    logger.setLevel(logging.INFO)
 
-    # Create formatter
     formatter = logging.Formatter('%(asctime)s - %(message)s')
 
     # Create file handler that logs to the file
@@ -34,7 +28,6 @@ def setup_logger():
     logger.addHandler(file_handler)
     logger.addHandler(stream_handler)
 
-# Function to log packet details using Scapy (only summary)
 def inspect_packet(pkt):
     packet_id = pkt.id
     packet_data = pkt.get_payload()
@@ -63,9 +56,8 @@ def process_packets():
         print("Packet logging stopped.")
         nfqueue.unbind()
 
-# Main function to start logging packets
 def main():
-    # Set up the logger once
+    # Set up the logger
     setup_logger()
 
     # Start processing packets

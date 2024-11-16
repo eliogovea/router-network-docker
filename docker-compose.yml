@@ -16,7 +16,6 @@ services:
       # NOTE: the IP address of the router is hardcoded in ./client/files/etc/resolv.conf
       # TODO: find a better way
       - ./client/files/etc/resolv.conf:/etc/resolv.conf:ro
-    entrypoint: ["sh", "/entrypoint.sh"]  # Run the entrypoint script on container startup
 
   router:
     build:
@@ -33,7 +32,6 @@ services:
       - NET_ADMIN  # Allow network administrative tasks like setting up routes and iptables
       - NET_RAW  # Allow raw socket access (required for advanced packet operations)
       - SYS_MODULE  # Allow loading/unloading of kernel modules (required for some network modules)
-    entrypoint: ["sh", "/entrypoint.sh"]  # Run the entrypoint script on container startup
 
   server:
     build:
@@ -47,7 +45,6 @@ services:
     cap_add:
       - NET_RAW  # Allow raw packet access (needed for ping)
       - NET_ADMIN  # Allow administrative network tasks (like configuring IP addresses)
-    entrypoint: ["sh", "/entrypoint.sh"]  # Run the entrypoint script on container startup
 
 networks:
   lan:

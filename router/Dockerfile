@@ -4,12 +4,7 @@ FROM debian:bullseye
 # Set environment variable to avoid interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install necessary packages:
-# - iproute2: For network configuration tools (e.g., ip command)
-# - iputils-ping: For network testing (ping)
-# - iptables: For managing firewall rules and routing
-# - python3: For running the packet logger script
-# - python3-pip: Python package installer
+# Install necessary packages
 RUN apt-get update && apt-get install -y \
     iproute2 \
     iputils-ping \
@@ -21,11 +16,10 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     && apt-get clean
 
-# Install Python dependencies for NetfilterQueue and Scapy (used for packet handling)
 RUN pip3 install NetfilterQueue scapy
 
 # Copy files from the host to the container
-COPY files/etc/dnsmasq.conf     /etc/dnsmasq.conf
+COPY files/etc/dnsmasq.conf        /etc/dnsmasq.conf
 COPY files/opt/packet_inspector.py /opt/packet_inspector.py
 
 # Copy the entrypoint script from the host to the container
