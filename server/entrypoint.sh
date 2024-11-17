@@ -17,10 +17,22 @@ ip addr add 192.168.20.2/24 dev eth0
 iptables -F
 
 # Set default policy to DROP
-iptables -P INPUT DROP
+iptables -t filter -P INPUT DROP
 
 # Set the NFQUEUE rule to send packets to queue 0
-iptables -A INPUT -j NFQUEUE --queue-num 0
+iptables -t filter -A INPUT -j NFQUEUE --queue-num 0
+
+# Set default policy to DROP
+iptables -t filter -P FORWARD DROP
+
+# Set the NFQUEUE rule to send packets to queue 0
+iptables -t filter -A FORWARD -j NFQUEUE --queue-num 0
+
+# Set default policy to DROP
+iptables -t filter -P OUTPUT DROP
+
+# Set the NFQUEUE rule to send packets to queue 0
+iptables -t filter -A OUTPUT -j NFQUEUE --queue-num 0
 
 # Keep the container running to avoid exit
 exec python3 /opt/packet_inspector.py

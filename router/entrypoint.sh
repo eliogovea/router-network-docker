@@ -21,10 +21,6 @@ ip addr add 192.168.20.1/24 dev eth1
 # Enable IPv4 packet forwarding to allow routing
 echo 1 > /proc/sys/net/ipv4/ip_forward
 
-# Set default policy to DROP
-iptables -P INPUT DROP
-iptables -P FORWARD DROP
-
 # Clear existing NAT iptables
 iptables -t nat -F
 
@@ -32,17 +28,26 @@ iptables -t nat -F
 iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
 
 # Clear existing iptables
-iptables -F
+iptables -t filter -F
+
+# Set default policy to DROP
+iptables -t filter -P INPUT DROP
 
 # Set the NFQUEUE rule to send packets to queue 0
-iptables -A INPUT -i eth0 -j NFQUEUE --queue-num 0
+iptables -t filter -A INPUT -j NFQUEUE --queue-num 0
+
+# Set default policy to DROP
+iptables -t filter -P FORWARD DROP
 
 # Set the NFQUEUE rule to send packets to queue 0
-iptables -A FORWARD -i eth0 -j NFQUEUE --queue-num 0
+iptables -t filter -A FORWARD -i eth0 -j NFQUEUE --queue-num 0
 
 # Set the NFQUEUE rule to send packets to queue 0
 # for traffic from WAN to LAN with established connections
-iptables -A FORWARD -i eth1 -m state --state RELATED,ESTABLISHED -j NFQUEUE --queue-num 0
+iptables -t filter -A FORWARD -i eth1 -m state --state RELATED,ESTABLISHED -j NFQUEUE --queue-num 0
+
+# Set the NFQUEUE rule to send packets to queue 0
+iptables -t filter -A OUTPUT -j NFQUEUE --queue-num 0
 
 # Start dnsmasq
 dnsmasq -C /etc/dnsmasq.conf
