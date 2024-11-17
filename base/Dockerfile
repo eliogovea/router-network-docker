@@ -20,15 +20,3 @@ RUN pip3 install NetfilterQueue scapy
 
 # Copy files from the host to the container
 COPY files/opt/packet_inspector.py /opt/packet_inspector.py
-
-# Copy the entrypoint script from the host to the container
-COPY entrypoint.sh /entrypoint.sh
-
-# Make the entrypoint script executable
-RUN chmod +x /entrypoint.sh
-
-# Set the working directory to the root of the container
-WORKDIR /
-
-# Set the default entrypoint script to configure the network and iptables
-ENTRYPOINT ["/entrypoint.sh"]
