@@ -43,7 +43,7 @@ iptables -t filter -A INPUT -j ACCEPT
 iptables -t filter -P FORWARD DROP
 
 # Log packets
-iptables -t filter -A FORWARD -i eth0 -j NFLOG --nflog-group 1 --nflog-prefix "[FORWARD]"
+iptables -t filter -A FORWARD -j NFLOG --nflog-group 1 --nflog-prefix "[FORWARD]"
 
 # Accept packets from LAN to WAN
 iptables -t filter -A FORWARD -i eth0 -j ACCEPT

@@ -39,4 +39,3 @@ ip -4 addr show eth0
 
 # Keep the container running to avoid exit
 exec ulogd -c /etc/ulogd.conf -v
-# exec python3 /opt/packet_inspector.py
