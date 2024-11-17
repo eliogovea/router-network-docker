@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 set -u
@@ -13,11 +13,14 @@ ip addr flush dev eth0
 # Set up IPv4 address for the server in the WAN network
 ip addr add 192.168.20.2/24 dev eth0
 
-# Remove any default route that might already exist (prevents conflicts)
-ip route del default || true
+# Clear existing iptables
+iptables -F
 
-# Add a default IPv4 route via the router's IP in the WAN network
-ip route add default via 192.168.20.1
+# Set default policy to DROP
+iptables -P INPUT DROP
+
+# Set the NFQUEUE rule to send packets to queue 0
+iptables -A INPUT -j NFQUEUE --queue-num 0
 
 # Keep the container running to avoid exit
-sleep infinity
+exec python3 /opt/packet_inspector.py
