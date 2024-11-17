@@ -4,10 +4,10 @@ FROM alpine:latest
 # Install required packages
 RUN apk update && \
     apk add --no-cache \
-        bind-tools \
-        dhclient \
-        iproute2 \
-        iputils
+    bind-tools \
+    dhclient \
+    iproute2 \
+    iputils
 
 # Copy the entrypoint script from the host to the container
 COPY entrypoint.sh /entrypoint.sh

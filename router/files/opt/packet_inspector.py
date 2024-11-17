@@ -32,10 +32,10 @@ def inspect_packet(pkt):
     packet_id = pkt.id
     packet_data = pkt.get_payload()
     packet_data_scapy = IP(packet_data)
-    
+
     # TODO: inspect packet
 
-    logger.info(f"Packet  {packet_id}: {packet_data_scapy.summary()}")    
+    logger.info(f"Packet  {packet_id}: {packet_data_scapy.summary()}")
     logger.info(f"Verdict {packet_id}: accept")
 
     # Accept the packet (so it continues through the network stack)
