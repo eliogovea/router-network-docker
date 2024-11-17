@@ -24,6 +24,12 @@ services:
         bind:
           create_host_path: true
       - type: bind
+        source: ./client/files/etc/ulogd.conf
+        target: /etc/ulogd.conf
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
         source: ./client/entrypoint.sh
         target: /entrypoint.sh
         read_only: true
@@ -44,6 +50,12 @@ services:
       - type: bind
         source: ./router/files/etc/dnsmasq.conf
         target: /etc/dnsmasq.conf
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ./router/files/etc/ulogd.conf
+        target: /etc/ulogd.conf
         read_only: true
         bind:
           create_host_path: true
@@ -72,6 +84,12 @@ services:
       - type: bind
         source: ./client/files/etc/resolv.conf
         target: /etc/resolv.conf
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ./server/files/etc/ulogd.conf
+        target: /etc/ulogd.conf
         read_only: true
         bind:
           create_host_path: true

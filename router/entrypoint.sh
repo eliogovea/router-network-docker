@@ -33,24 +33,32 @@ iptables -t filter -F
 # Set default policy to DROP
 iptables -t filter -P INPUT DROP
 
-# Set the NFQUEUE rule to send packets to queue 0
-iptables -t filter -A INPUT -j NFQUEUE --queue-num 0
+# Log packets
+iptables -t filter -A INPUT -j NFLOG --nflog-group 1 --nflog-prefix "[INPUT]"
+
+# Accept packets
+iptables -t filter -A INPUT -j ACCEPT
 
 # Set default policy to DROP
 iptables -t filter -P FORWARD DROP
 
-# Set the NFQUEUE rule to send packets to queue 0
-iptables -t filter -A FORWARD -i eth0 -j NFQUEUE --queue-num 0
+# Log packets
+iptables -t filter -A FORWARD -i eth0 -j NFLOG --nflog-group 1 --nflog-prefix "[FORWARD]"
 
-# Set the NFQUEUE rule to send packets to queue 0
-# for traffic from WAN to LAN with established connections
-iptables -t filter -A FORWARD -i eth1 -m state --state RELATED,ESTABLISHED -j NFQUEUE --queue-num 0
+# Accept packets from LAN to WAN
+iptables -t filter -A FORWARD -i eth0 -j ACCEPT
 
-# Set the NFQUEUE rule to send packets to queue 0
-iptables -t filter -A OUTPUT -j NFQUEUE --queue-num 0
+# Accept packets from WAN to LAN with stabilished connections
+iptables -t filter -A FORWARD -i eth1 -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+# Set default policy to ACCEPT
+iptables -t filter -P INPUT ACCEPT
+
+# Set the NFLOG rule to log packets to group 1
+iptables -t filter -A OUTPUT -j NFLOG --nflog-group 1 --nflog-prefix "[OUTPUT]"
 
 # Start dnsmasq
 dnsmasq -C /etc/dnsmasq.conf
 
 # Keep the container running to avoid exit
-exec python3 /opt/packet_inspector.py
+exec ulogd -c /etc/ulogd.conf -v

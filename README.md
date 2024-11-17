@@ -6,11 +6,11 @@ Docker setup for testing network applications. It simulates client-server commun
 - **client**: Simulates a client device connected to the `LAN` network
 - **router**: Simulates a router device connected to `LAN` and `WAN` networks
     - `IPv4` packet forwarding
-    - `dnsmasq` for `DHCP` on `LAN` network
-    - `dnsmasq` for `DNS` on `LAN` network
     - `NAT` from `LAN` to `WAN`
-    - `iptables` rules to intercept packets via `NFQUEUE`
-    - user space application to monitor and inspect packets
+    - `dnsmasq` for `DHCP` on `LAN`
+    - `dnsmasq` for `DNS` on `LAN`
+    - `iptables` rules log packets with `NFLOG`
+    - `ulog2` configured to save packets data
 - **server**: Simulates a server device connected to the `WAN` network
 
 ## Networks
@@ -27,7 +27,6 @@ docker-compose up --build
 
 ### Ping from client to server
 
-
 1. Open one terminal and run
     ```bash
     docker compose up --build
@@ -36,30 +35,44 @@ docker-compose up --build
     ```bash
     docker exec client ping -c 1 192.168.20.2
     ```
-3. Inspect the logs to understand the packets flow
+3. Inspect client logs
+    ```bash
+    docker exec client cat /var/log/ulogd_syslogemu.log
+    ```
+
     ```log
-    client  | 2024-11-17 11:20:12,125 - [id=1] summary: IP / ICMP 192.168.10.31 > 192.168.20.2 echo-request 0 / Raw
-    client  | 2024-11-17 11:20:12,126 - [id=1] src IP:  192.168.10.31
-    client  | 2024-11-17 11:20:12,126 - [id=1] dst IP:  192.168.20.2
-    client  | 2024-11-17 11:20:12,126 - [id=1] verdict: accept
-    router  | 2024-11-17 11:20:12,127 - [id=3] summary: IP / ICMP 192.168.10.31 > 192.168.20.2 echo-request 0 / Raw
-    router  | 2024-11-17 11:20:12,127 - [id=3] src IP:  192.168.10.31
-    router  | 2024-11-17 11:20:12,127 - [id=3] dst IP:  192.168.20.2
-    router  | 2024-11-17 11:20:12,127 - [id=3] verdict: accept
-    server  | 2024-11-17 11:20:12,129 - [id=1] summary: IP / ICMP 192.168.20.1 > 192.168.20.2 echo-request 0 / Raw
-    server  | 2024-11-17 11:20:12,129 - [id=1] src IP:  192.168.20.1
-    server  | 2024-11-17 11:20:12,129 - [id=1] dst IP:  192.168.20.2
-    server  | 2024-11-17 11:20:12,129 - [id=1] verdict: accept
-    server  | 2024-11-17 11:20:12,130 - [id=2] summary: IP / ICMP 192.168.20.2 > 192.168.20.1 echo-reply 0 / Raw
-    server  | 2024-11-17 11:20:12,130 - [id=2] src IP:  192.168.20.2
-    server  | 2024-11-17 11:20:12,130 - [id=2] dst IP:  192.168.20.1
-    server  | 2024-11-17 11:20:12,131 - [id=2] verdict: accept
-    router  | 2024-11-17 11:20:12,132 - [id=4] summary: IP / ICMP 192.168.20.2 > 192.168.10.31 echo-reply 0 / Raw
-    router  | 2024-11-17 11:20:12,132 - [id=4] src IP:  192.168.20.2
-    router  | 2024-11-17 11:20:12,132 - [id=4] dst IP:  192.168.10.31
-    router  | 2024-11-17 11:20:12,132 - [id=4] verdict: accept
-    client  | 2024-11-17 11:20:12,133 - [id=2] summary: IP / ICMP 192.168.20.2 > 192.168.10.31 echo-reply 0 / Raw
-    client  | 2024-11-17 11:20:12,133 - [id=2] src IP:  192.168.20.2
-    client  | 2024-11-17 11:20:12,133 - [id=2] dst IP:  192.168.10.31
-    client  | 2024-11-17 11:20:12,133 - [id=2] verdict: accept
+    Nov 17 15:17:22 d57b3b914aff [OUTPUT] IN= OUT=eth0 MAC= SRC=192.168.10.31 DST=192.168.20.2 LEN=84 TOS=00 PREC=0x00 TTL=64 ID=6079 DF PROTO=ICMP TYPE=8 CODE=0 ID=82 SEQ=1 UID=0 GID=0 MARK=0
+    Nov 17 15:17:21 d57b3b914aff [INPUT] IN=eth0 OUT= MAC=02:42:ac:14:00:02:02:42:ac:14:00:03:08:00 SRC=192.168.20.2 DST=192.168.10.31 LEN=84 TOS=00 PREC=0x00 TTL=63 ID=17501 PROTO=ICMP TYPE=0 CODE=0 ID=82 SEQ=1 MARK=0
+    ```
+
+4. Inspect router logs
+    ```bash
+    docker exec router cat /var/log/ulogd_syslogemu.log
+    ```
+
+    ```log
+    Nov 17 15:10:30 2b11ee656a3d [INPUT] IN=eth0 OUT= MAC=ff:ff:ff:ff:ff:ff:02:42:ac:14:00:02:08:00 SRC=0.0.0.0 DST=255.255.255.255 LEN=328 TOS=10 PREC=0x00 TTL=128 ID=0 PROTO=UDP SPT=68 DPT=67 LEN=308 MARK=0
+    Nov 17 15:10:31 2b11ee656a3d [OUTPUT] IN= OUT=eth0 MAC= SRC=192.168.10.1 DST=192.168.10.31 LEN=48 TOS=00 PREC=0x00 TTL=64 ID=10940 DF PROTO=ICMP TYPE=8 CODE=0 ID=41840 SEQ=0 UID=65534 GID=30 MARK=0
+    Nov 17 15:10:43 2b11ee656a3d [INPUT] IN=eth0 OUT= MAC=ff:ff:ff:ff:ff:ff:02:42:ac:14:00:03:08:00 SRC=0.0.0.0 DST=255.255.255.255 LEN=328 TOS=10 PREC=0x00 TTL=128 ID=0 PROTO=UDP SPT=68 DPT=67 LEN=308 MARK=0
+    Nov 17 15:10:44 2b11ee656a3d [OUTPUT] IN= OUT=eth0 MAC= SRC=192.168.10.1 DST=192.168.10.32 LEN=48 TOS=00 PREC=0x00 TTL=64 ID=41942 DF PROTO=ICMP TYPE=8 CODE=0 ID=62348 SEQ=0 UID=65534 GID=30 MARK=0
+    Nov 17 15:10:47 2b11ee656a3d [OUTPUT] IN= OUT=eth0 MAC= SRC=192.168.10.1 DST=192.168.10.32 LEN=328 TOS=00 PREC=0xC0 TTL=64 ID=20446 PROTO=UDP SPT=67 DPT=68 LEN=308 UID=0 GID=0 MARK=0
+    Nov 17 15:10:46 2b11ee656a3d [INPUT] IN=eth0 OUT= MAC=ff:ff:ff:ff:ff:ff:02:42:ac:14:00:03:08:00 SRC=0.0.0.0 DST=255.255.255.255 LEN=328 TOS=10 PREC=0x00 TTL=128 ID=0 PROTO=UDP SPT=68 DPT=67 LEN=308 MARK=0
+    Nov 17 15:10:47 2b11ee656a3d [OUTPUT] IN= OUT=eth0 MAC= SRC=192.168.10.1 DST=192.168.10.32 LEN=334 TOS=00 PREC=0xC0 TTL=64 ID=20447 PROTO=UDP SPT=67 DPT=68 LEN=314 UID=0 GID=0 MARK=0
+    Nov 17 15:16:45 2b11ee656a3d [INPUT] IN=eth0 OUT= MAC=ff:ff:ff:ff:ff:ff:02:42:ac:14:00:02:08:00 SRC=0.0.0.0 DST=255.255.255.255 LEN=328 TOS=10 PREC=0x00 TTL=128 ID=0 PROTO=UDP SPT=68 DPT=67 LEN=308 MARK=0
+    Nov 17 15:16:54 2b11ee656a3d [INPUT] IN=eth0 OUT= MAC=ff:ff:ff:ff:ff:ff:02:42:ac:14:00:02:08:00 SRC=0.0.0.0 DST=255.255.255.255 LEN=328 TOS=10 PREC=0x00 TTL=128 ID=0 PROTO=UDP SPT=68 DPT=67 LEN=308 MARK=0
+    Nov 17 15:16:55 2b11ee656a3d [OUTPUT] IN= OUT=eth0 MAC= SRC=192.168.10.1 DST=192.168.10.31 LEN=48 TOS=00 PREC=0x00 TTL=64 ID=58068 DF PROTO=ICMP TYPE=8 CODE=0 ID=18131 SEQ=0 UID=65534 GID=30 MARK=0
+    Nov 17 15:16:58 2b11ee656a3d [OUTPUT] IN= OUT=eth0 MAC= SRC=192.168.10.1 DST=192.168.10.31 LEN=328 TOS=00 PREC=0xC0 TTL=64 ID=47285 PROTO=UDP SPT=67 DPT=68 LEN=308 UID=0 GID=0 MARK=0
+    Nov 17 15:16:57 2b11ee656a3d [INPUT] IN=eth0 OUT= MAC=ff:ff:ff:ff:ff:ff:02:42:ac:14:00:02:08:00 SRC=0.0.0.0 DST=255.255.255.255 LEN=328 TOS=10 PREC=0x00 TTL=128 ID=0 PROTO=UDP SPT=68 DPT=67 LEN=308 MARK=0
+    Nov 17 15:16:58 2b11ee656a3d [OUTPUT] IN= OUT=eth0 MAC= SRC=192.168.10.1 DST=192.168.10.31 LEN=334 TOS=00 PREC=0xC0 TTL=64 ID=47288 PROTO=UDP SPT=67 DPT=68 LEN=314 UID=0 GID=0 MARK=0
+    Nov 17 15:17:21 2b11ee656a3d [FORWARD] IN=eth0 OUT=eth1 MAC=02:42:ac:14:00:03:02:42:ac:14:00:02:08:00 SRC=192.168.10.31 DST=192.168.20.2 LEN=84 TOS=00 PREC=0x00 TTL=63 ID=6079 DF PROTO=ICMP TYPE=8 CODE=0 ID=82 SEQ=1 MARK=0
+    ```
+
+4. Inspect server logs
+    ```bash
+    docker exec server cat /var/log/ulogd_syslogemu.log
+    ```
+
+    ```log
+    Nov 17 15:17:21 a24aade7c70d [INPUT] IN=eth0 OUT= MAC=02:42:ac:15:00:02:02:42:ac:15:00:03:08:00 SRC=192.168.20.1 DST=192.168.20.2 LEN=84 TOS=00 PREC=0x00 TTL=63 ID=6079 DF PROTO=ICMP TYPE=8 CODE=0 ID=82 SEQ=1 MARK=0
+    Nov 17 15:17:22 a24aade7c70d [OUTPUT] IN= OUT=eth0 MAC= SRC=192.168.20.2 DST=192.168.20.1 LEN=84 TOS=00 PREC=0x00 TTL=64 ID=17501 PROTO=ICMP TYPE=0 CODE=0 ID=82 SEQ=1 MARK=0
     ```

@@ -11,25 +11,25 @@ ip link set eth0 up
 ip addr flush dev eth0
 
 # Clear existing iptables
-iptables -F
+iptables -t filter -F
 
-# Set default policy to DROP
-iptables -t filter -P INPUT DROP
+# Set default policy to ACCEPT
+iptables -t filter -P INPUT ACCEPT
 
-# Set the NFQUEUE rule to send packets to queue 0
-iptables -t filter -A INPUT -j NFQUEUE --queue-num 0
+# Log packets
+iptables -t filter -A INPUT -j NFLOG --nflog-group 1 --nflog-prefix "[INPUT]"
 
-# Set default policy to DROP
-iptables -t filter -P FORWARD DROP
+# Set default policy to ACCEPT
+iptables -t filter -P FORWARD ACCEPT
 
-# Set the NFQUEUE rule to send packets to queue 0
-iptables -t filter -A FORWARD -j NFQUEUE --queue-num 0
+# Log packets
+iptables -t filter -A FORWARD -j NFLOG --nflog-group 1 --nflog-prefix "[FORWARD]"
 
-# Set default policy to DROP
-iptables -t filter -P OUTPUT DROP
+# Set default policy to ACCEPT
+iptables -t filter -P OUTPUT ACCEPT
 
-# Set the NFQUEUE rule to send packets to queue 0
-iptables -t filter -A OUTPUT -j NFQUEUE --queue-num 0
+# Log packets
+iptables -t filter -A OUTPUT -j NFLOG --nflog-group 1 --nflog-prefix "[OUTPUT]"
 
 # Request IP address from router
 dhclient eth0
@@ -38,4 +38,5 @@ dhclient eth0
 ip -4 addr show eth0
 
 # Keep the container running to avoid exit
-exec python3 /opt/packet_inspector.py
+exec ulogd -c /etc/ulogd.conf -v
+# exec python3 /opt/packet_inspector.py

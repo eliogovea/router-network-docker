@@ -13,10 +13,11 @@ RUN DEBIAN_FRONTEND=noninteractive \
         libnfnetlink-dev \
         python3 \
         python3-pip \
+        ulogd2 \
     && pip3 install \
         NetfilterQueue \
         scapy \
     && apt-get clean
 
 # Copy files from the host to the container
-COPY files/opt/packet_inspector.py /opt/packet_inspector.py
+COPY files/opt/packet_filter.py /opt/packet_filter.py
