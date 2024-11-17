@@ -1,55 +1,55 @@
+name: network-docker
 services:
   client:
     build:
-      context: ./client  # Directory where the Dockerfile for the client is located
-      dockerfile: Dockerfile  # Use the Dockerfile named Dockerfile
-    container_name: client  # Name of the container instance
-    networks:
-      - lan  # Connect the client container to the 'lan' network
-    cap_drop:
-      - ALL  # Drop all capabilities by default for security
+      context: ./client
+      dockerfile: Dockerfile
     cap_add:
-      - NET_RAW  # Allow raw packet access (needed for ping)
-      - NET_ADMIN  # Allow administrative network tasks (like configuring IP addresses)
+      - NET_RAW
+      - NET_ADMIN
+    cap_drop:
+      - ALL
+    container_name: client
+    networks:
+      lan: null
     volumes:
       # Workaround to prevent Docker Engine from setting the content of /etc/resolv.conf
       # NOTE: the IP address of the router is hardcoded in ./client/files/etc/resolv.conf
       # TODO: find a better way
-      - ./client/files/etc/resolv.conf:/etc/resolv.conf:ro
-
+      - type: bind
+        source: ./client/files/etc/resolv.conf
+        target: /etc/resolv.conf
+        read_only: true
+        bind:
+          create_host_path: true
   router:
     build:
-      context: ./router  # Directory where the Dockerfile for the router is located
-      dockerfile: Dockerfile  # Use the Dockerfile named Dockerfile
-    container_name: router  # Name of the container instance
-    privileged: true  # Grant the container extended privileges for advanced networking (required for iptables)
+      context: ./router
+      dockerfile: Dockerfile
+    container_name: router
     networks:
-      - lan  # Connect the router to the 'lan' network
-      - wan  # Connect the router to the 'wan' network
-    cap_drop:
-      - ALL  # Drop all capabilities by default for security
-    cap_add:
-      - NET_ADMIN  # Allow network administrative tasks like setting up routes and iptables
-      - NET_RAW  # Allow raw socket access (required for advanced packet operations)
-      - SYS_MODULE  # Allow loading/unloading of kernel modules (required for some network modules)
-
+      lan: null
+      wan: null
+    # TODO: enable only the required capabilities
+    privileged: true
   server:
     build:
-      context: ./server  # Directory where the Dockerfile for the server is located
-      dockerfile: Dockerfile  # Use the Dockerfile named Dockerfile
-    container_name: server  # Name of the container instance
-    networks:
-      - wan  # Connect the server container to the 'wan' network
-    cap_drop:
-      - ALL  # Drop all capabilities by default for security
+      context: ./server
+      dockerfile: Dockerfile
     cap_add:
-      - NET_RAW  # Allow raw packet access (needed for ping)
-      - NET_ADMIN  # Allow administrative network tasks (like configuring IP addresses)
-
+      - NET_RAW
+      - NET_ADMIN
+    cap_drop:
+      - ALL
+    container_name: server
+    networks:
+      wan: null
 networks:
   lan:
-    driver: bridge  # Use a bridge network for LAN to simulate a local network segment
+    name: network-docker_lan
+    driver: bridge
     internal: true
   wan:
-    driver: bridge  # Use a separate bridge network for WAN to simulate an external network segment
+    name: network-docker_wan
+    driver: bridge
     internal: true
