@@ -1,0 +1,110 @@
+name: network-docker
+services:
+  client:
+    build:
+      context: ./base
+      dockerfile: Dockerfile
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    cap_drop:
+      - ALL
+    container_name: client
+    entrypoint: [ "sh", "/entrypoint.sh" ]
+    networks:
+      lan: null
+    volumes:
+      # Workaround to prevent Docker Engine from setting the content of /etc/resolv.conf
+      # NOTE: the IP address of the router is hardcoded in ./client/files/etc/resolv.conf
+      # TODO: find a better way
+      - type: bind
+        source: ./client/files/etc/resolv.conf
+        target: /etc/resolv.conf
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ./client/files/etc/ulogd.conf
+        target: /etc/ulogd.conf
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ./client/entrypoint.sh
+        target: /entrypoint.sh
+        read_only: true
+        bind:
+          create_host_path: true
+  router:
+    build:
+      context: ./base
+      dockerfile: Dockerfile
+    container_name: router
+    entrypoint: [ "sh", "/entrypoint.sh" ]
+    networks:
+      lan: null
+      wan: null
+    # TODO: enable only the required capabilities
+    privileged: true
+    volumes:
+      - type: bind
+        source: ./router/files/etc/dnsmasq.conf
+        target: /etc/dnsmasq.conf
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ./router/files/etc/ulogd.conf
+        target: /etc/ulogd.conf
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ./router/entrypoint.sh
+        target: /entrypoint.sh
+        read_only: true
+        bind:
+          create_host_path: true
+  server:
+    build:
+      context: ./base
+      dockerfile: Dockerfile
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    cap_drop:
+      - ALL
+    container_name: server
+    entrypoint: [ "sh", "/entrypoint.sh" ]
+    networks:
+      wan: null
+    volumes:
+      # Workaround to prevent Docker Engine from setting the content of /etc/resolv.conf
+      # TODO: find a better way
+      - type: bind
+        source: ./client/files/etc/resolv.conf
+        target: /etc/resolv.conf
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ./server/files/etc/ulogd.conf
+        target: /etc/ulogd.conf
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ./server/entrypoint.sh
+        target: /entrypoint.sh
+        read_only: true
+        bind:
+          create_host_path: true
+networks:
+  lan:
+    name: network-docker_lan
+    driver: bridge
+    internal: true
+  wan:
+    name: network-docker_wan
+    driver: bridge
+    internal: true
