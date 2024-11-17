@@ -2,7 +2,7 @@ name: network-docker
 services:
   client:
     build:
-      context: ./client
+      context: ./base
       dockerfile: Dockerfile
     cap_add:
       - NET_RAW
@@ -10,6 +10,7 @@ services:
     cap_drop:
       - ALL
     container_name: client
+    entrypoint: [ "sh", "/entrypoint.sh" ]
     networks:
       lan: null
     volumes:
@@ -19,6 +20,12 @@ services:
       - type: bind
         source: ./client/files/etc/resolv.conf
         target: /etc/resolv.conf
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ./client/entrypoint.sh
+        target: /entrypoint.sh
         read_only: true
         bind:
           create_host_path: true

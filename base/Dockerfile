@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     iproute2 \
     iputils-ping \
     iptables \
+    isc-dhcp-client \
     dnsmasq \
     libnfnetlink-dev \
     libnetfilter-queue-dev \
