@@ -4,11 +4,11 @@ Docker setup for testing network applications. It simulates client-server commun
 
 ## Containers
 - **client**: Simulates a client device connected to the `LAN` network
-- **router**: Simulates a router device connected to LAN and WAN networks
+- **router**: Simulates a router device connected to `LAN` and `WAN` networks
     - `IPv4` packet forwarding
     - `dnsmasq` for `DHCP` on `LAN` network
     - `dnsmasq` for `DNS` on `LAN` network
-    - `iptables` rules to route traffic between `LAN` and `WAN` networks
+    - `NAT` from `LAN` to `WAN`
     - `iptables` rules to intercept packets via `NFQUEUE`
     - user space application to monitor and inspect packets
 - **server**: Simulates a server device connected to the `WAN` network

@@ -4,9 +4,6 @@ set -e
 set -u
 set -x
 
-# Enable IPv4 packet forwarding to allow routing
-echo 1 > /proc/sys/net/ipv4/ip_forward
-
 # Bring up both eth0 (LAN) and eth1 (WAN) interfaces if they're not already up
 ip link set eth0 up
 ip link set eth1 up
@@ -21,28 +18,31 @@ ip addr add 192.168.10.1/24 dev eth0
 # eth1 for WAN
 ip addr add 192.168.20.1/24 dev eth1
 
-# Clear existing iptables and ip6tables rules to start fresh
-iptables -F
+# Enable IPv4 packet forwarding to allow routing
+echo 1 > /proc/sys/net/ipv4/ip_forward
 
 # Set default policy to DROP
 iptables -P INPUT DROP
-
-# Set the NFQUEUE rule to send packets to queue 0
-iptables -A INPUT -j NFQUEUE --queue-num 0
-
-# Set default policy to DROP
 iptables -P FORWARD DROP
 
+# Clear existing NAT iptables
+iptables -t nat -F
+
+# Masquerade LAN traffic going to WAN
+iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
+
+# Clear existing iptables
+iptables -F
+
 # Set the NFQUEUE rule to send packets to queue 0
-iptables -A FORWARD -j NFQUEUE --queue-num 0
+iptables -A INPUT -i eth0 -j NFQUEUE --queue-num 0
 
-# Allow internal traffic within the same network
-iptables -A FORWARD -i eth0 -o eth0 -j ACCEPT  # LAN side traffic (IPv4)
-iptables -A FORWARD -i eth1 -o eth1 -j ACCEPT  # WAN side traffic (IPv4)
+# Set the NFQUEUE rule to send packets to queue 0
+iptables -A FORWARD -i eth0 -j NFQUEUE --queue-num 0
 
-# Allow routing between LAN and WAN
-iptables -A FORWARD -i eth0 -o eth1 -j ACCEPT  # LAN to WAN routing (IPv4)
-iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT  # WAN to LAN routing (IPv4)
+# Set the NFQUEUE rule to send packets to queue 0
+# for traffic from WAN to LAN with established connections
+iptables -A FORWARD -i eth1 -m state --state RELATED,ESTABLISHED -j NFQUEUE --queue-num 0
 
 # Start dnsmasq
 dnsmasq -C /etc/dnsmasq.conf
