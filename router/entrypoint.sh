@@ -48,11 +48,11 @@ iptables -t filter -A FORWARD -j NFLOG --nflog-group 1 --nflog-prefix "[FORWARD]
 # Accept packets from LAN to WAN
 iptables -t filter -A FORWARD -i eth0 -j ACCEPT
 
-# Accept packets from WAN to LAN with stabilished connections
+# Accept packets from WAN to LAN with existing connections
 iptables -t filter -A FORWARD -i eth1 -m state --state RELATED,ESTABLISHED -j ACCEPT
 
 # Set default policy to ACCEPT
-iptables -t filter -P INPUT ACCEPT
+iptables -t filter -P OUTPUT ACCEPT
 
 # Set the NFLOG rule to log packets to group 1
 iptables -t filter -A OUTPUT -j NFLOG --nflog-group 1 --nflog-prefix "[OUTPUT]"
